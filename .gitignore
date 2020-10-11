@@ -1,3 +1,10 @@
+build
+.coverage
+dist
 .eggs
+htmlcov
 hv_control/__pycache__
 hv_control.egg-info
+.pytest_cache
+tests/__pycache__
+.tox

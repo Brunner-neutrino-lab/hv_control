@@ -10,7 +10,6 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
+    packages=['hv_control'],
     python_requires='>=3',
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest']
 )
