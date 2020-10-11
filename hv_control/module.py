@@ -34,10 +34,6 @@ class Module:
         channel.oid_suffix = oid_suffix
         self.channels[channel.oid_suffix] = channel
 
-    def check_channel(self, channel, oid_suffix):
-
-        self.check_address_free(channel, oid_suffix)
-
     def check_address_in_range(self, channel, address):
         if address < 0 or address > self.n_channels-1:
             raise ValueError('Invalid address ({:d}) given. \
@@ -47,16 +43,16 @@ The module only has addresses between 0 and {:d}.'.format(
     def check_oid_suffix_free(self, channel, oid_suffix):
         for c in self.channels:
             if self.channels[c].oid_suffix == oid_suffix:
-                raise ValueError('Invalid OID suffix ({:d}) given. \
-Channel {:d} is already occupied by \'{}\'.'.format(
+                raise ValueError('Invalid OID suffix ({}) given. \
+Channel {} is already occupied by \'{}\'.'.format(
                     oid_suffix, oid_suffix, self.channels[c].name)) 
-
-class EHS_F5_30n(Module):
-    def __init__(self, name):
-        Module.__init__(self, name, n_channels=16, polarity=-1, 
-                        max_voltage=3e3, max_current=1e-3)
 
 class EHS_8260p(Module):
     def __init__(self, name):
         Module.__init__(self, name, n_channels=8, polarity=1, 
                         max_voltage=6e3, max_current=1e-3)
+
+class EHS_F5_30n(Module):
+    def __init__(self, name):
+        Module.__init__(self, name, n_channels=16, polarity=-1, 
+                        max_voltage=3e3, max_current=1e-3)
