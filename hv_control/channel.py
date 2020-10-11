@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
+from hv_control.command import Command
+
 class Channel:
     def __init__(self, name):
         self.name = name
@@ -22,17 +24,16 @@ class Channel:
         
         self.commands = {
             'outputCurrent':
-            GetSetCommand('outputCurrent', int),
+            Command('outputCurrent', int),
             'outputStatus':
-            GetCommand('outputStatus'),
+            Command('outputStatus', None),
             'outputSwitch':
-            GetSetCommand('outputSwitch', int),
+            Command('outputSwitch', int),
             'outputVoltageRiseRate':
-            GetSetCommand('outputVoltageRiseRate', int),
+            Command('outputVoltageRiseRate', int),
             'outputVoltage':
-            GetSetCommand('outputVoltage', int),
+            Command('outputVoltage', int),
         }
 
-    def __call__(self, command_name, argument=None, community='public'):
-        self.commands[command_name](self.ip_address, self.oid_suffix,
-                                    argument=argument, community=community)
+    def __call__(self, command_name, argument=None, community='public', dry_run=False):
+        return self.commands[command_name](self.ip_address, self.oid_suffix, argument=argument, community=community, dry_run=dry_run)
