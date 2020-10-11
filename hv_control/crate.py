@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
+from hv_control.module import Module
+
 class Crate:
     def __init__(self, name, ip_address, n_slots):
         self.ip_address = ip_address
@@ -21,6 +23,7 @@ class Crate:
         self.modules = {}
 
     def add_module(self, module, slot):
+        assert isinstance(module, Module)
         self.check_slot(module, slot)
         module.ip_address = self.ip_address
         module.slot = slot

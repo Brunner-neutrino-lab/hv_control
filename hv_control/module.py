@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
+from hv_control.channel import Channel
+
 class Module:
     def __init__(self, name, n_channels, 
                  max_voltage, polarity, max_current):
@@ -27,6 +29,7 @@ class Module:
         self.channels = {}
 
     def add_channel(self, channel, address):
+        assert isinstance(channel, Channel)
         self.check_address_in_range(channel, address)
         oid_suffix = 'u{:d}{:02d}'.format(self.slot, address)
         self.check_oid_suffix_free(channel, oid_suffix)
