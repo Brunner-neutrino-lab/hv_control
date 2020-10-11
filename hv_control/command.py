@@ -1,4 +1,4 @@
-# This file is part of Foobar.
+# This file is part of hv_control.
 
 # hv_control is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,44 +13,24 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
-class GetCommand:
-    def __init__(self, name, snmp_command='snmpget',
-                 special_options='-Oqv'):
+import subprocess
+
+class Command:
+    def __init__(self, name, argument_type=None):
         self.name = name
-        self.general_options = '-v 2c -M +WIENER-CRATE-MIB'
-        self.prefix = '{}{}{} {}'.format(
-            snmp_command, '' if special_options == '' else ' ', 
-            special_options, self.general_options)
+        self.argument_type = argument_type
 
-    def __call__(self, ip_address, oid_suffix, 
-                 community='public'):
-        print(self.command_string_without_argument(
-            ip_address, oid_suffix, community))
-
-    def command_string_without_argument(
-        self, ip_address, oid_suffix, community='public'):
-        return '{} -c {} {} {}.{}'.format(
-            self.prefix, community, ip_address, self.name, 
-            oid_suffix
+    def __call__(self, ip_address, oid_suffix, community='public', argument=None, dry_run=False):
+        
+        com_str = self.command_string(argument)
+        opt_and_arg_str = self.option_and_argument_string(
+            ip_address, oid_suffix, community=community, argument=argument
         )
 
-class SetCommand(GetCommand):
-    def __init__(self, name, argument_type):
-        GetCommand.__init__(self, name, snmp_command='snmpset',
-                            special_options='')
-        self.argument_type = argument_type
-        if self.argument_type == int:
-            self.argument_type_string = 'i'
-        elif self.argument_type == float:
-            self.argument_type_string = 'f'
+        if dry_run:
+            return '{} {}'.format(com_str, opt_and_arg_str)
         else:
-            raise ValueError('No string representation for argument \
-of type {} defined'.format(self.argument_type))
-
-    def __call__(self, ip_address, oid_suffix, argument, 
-                 community='public'):
-        print(self.command_string_with_argument(ip_address, oid_suffix, argument, 
-                          community))
+            subprocess.run([com_str, opt_and_arg_str])
 
     def argument_type_string(self):
         if self.argument_type == int:
@@ -61,25 +41,37 @@ of type {} defined'.format(self.argument_type))
             raise ValueError('No string representation for argument \
 of type {} defined'.format(self.argument_type))
 
-    def command_string_with_argument(
-        self, ip_address, oid_suffix, argument, community='public'):
-        return '{} {} {}'.format(
-            self.command_string_without_argument(
-                ip_address, oid_suffix, community),
-            argument_type_string(self.argument_type),
-            str(argument)
+    def command_string(self, argument):
+        if argument is not None:
+            return 'snmpset'
+        return 'snmpget'
+
+    def special_options(self, argument):
+        if argument is not None:
+            return ''
+        return '-Oqv'
+
+    def option_and_argument_string(self, ip_address, oid_suffix, community='public', argument=None):
+        return '{}{}{}'.format(
+            self.option_string(ip_address, oid_suffix, community=community, argument=argument),
+            '' if argument is None else ' ',
+            self.argument_string(argument)
         )
 
-class GetSetCommand(SetCommand):
-    def __init__(self, name, argument_type):
-        SetCommand.__init__(self, name, argument_type)
-        self.get_command=GetCommand(name)
-        self.set_command=SetCommand(name, argument_type)
-        
-    def __call__(self, ip_address, oid_suffix,
-                 community='public', argument=None):
-        if argument is None:
-            self.get_command(ip_address, oid_suffix, community)
-        else:
-            self.set_command(ip_address, oid_suffix,
-                             argument, community)
+    def option_string(self, ip_address, oid_suffix, community, argument=None):
+        return '{}{}{} -c {} {} {}.{}'.format(
+            self.special_options(argument),
+            '' if self.special_options(argument) == '' else ' ', 
+            '-v 2c -M +WIENER-CRATE-MIB',
+            community, ip_address, self.name, 
+            oid_suffix
+        )
+
+    def argument_string(self, argument):
+        if argument is not None:
+            if self.argument_type is None:
+                raise ValueError('Command does not take arguments')
+            if not isinstance(argument, self.argument_type):
+                raise ValueError('Argument must be of type \'\''.format(str(self.argument_type)))
+            return '{} {}'.format(self.argument_type_string(), str(argument))
+        return ''
