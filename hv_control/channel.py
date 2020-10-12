@@ -16,23 +16,25 @@
 from hv_control.command import Command
 
 class Channel:
-    def __init__(self, name):
+    def __init__(self, name, max_voltage=None, max_current=None):
         self.name = name
+        self.max_voltage = max_voltage
+        self.max_current = max_current
 
         self.ip_address = '0.0.0.0'
         self.oid_suffix = 'u0'
-        
+
         self.commands = {
             'outputCurrent':
-            Command('outputCurrent', float),
+            Command('outputCurrent', float, lambda argument : argument >= 0. and argument <= max_current),
             'outputStatus':
             Command('outputStatus', None),
             'outputSwitch':
-            Command('outputSwitch', int),
+            Command('outputSwitch', int, lambda argument : argument in (0, 1, 10)),
             'outputVoltageRiseRate':
             Command('outputVoltageRiseRate', float),
             'outputVoltage':
-            Command('outputVoltage', float),
+            Command('outputVoltage', float, lambda argument : argument >= 0. and argument <= max_voltage),
         }
 
     def __call__(self, command_name, argument=None, community='public', dry_run=False):

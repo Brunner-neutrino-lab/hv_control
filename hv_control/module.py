@@ -28,13 +28,15 @@ class Module:
         self.slot = 0
         self.channels = {}
 
-    def add_channel(self, channel, address):
+    def add_channel(self, channel, address, max_voltage=None, max_current=None):
         assert isinstance(channel, Channel)
         self.check_address_in_range(channel, address)
         oid_suffix = 'u{:d}{:02d}'.format(self.slot, address)
         self.check_oid_suffix_free(channel, oid_suffix)
         channel.ip_address = self.ip_address
         channel.oid_suffix = oid_suffix
+        channel.max_voltage = self.max_voltage if max_voltage is None else max_voltage
+        channel.max_current = self.max_current if max_current is None else max_current
         self.channels[channel.oid_suffix] = channel
 
     def check_address_in_range(self, channel, address):

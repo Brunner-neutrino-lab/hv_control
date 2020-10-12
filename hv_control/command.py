@@ -16,9 +16,11 @@
 import subprocess
 
 class Command:
-    def __init__(self, name, argument_type=None):
+    def __init__(self, name, argument_type=None, 
+    argument_is_valid=lambda argument : True):
         self.name = name
         self.argument_type = argument_type
+        self.argument_is_valid = argument_is_valid
 
     def __call__(self, ip_address, oid_suffix, community='public', argument=None, dry_run=False):
         
@@ -70,6 +72,8 @@ of type {} defined'.format(self.argument_type))
 
     def argument_string(self, argument):
         if argument is not None:
+            if not self.argument_is_valid(argument):
+                raise ValueError('Invalid argument for command')
             if self.argument_type is None:
                 raise ValueError('Command does not take arguments')
             if not isinstance(argument, self.argument_type):
