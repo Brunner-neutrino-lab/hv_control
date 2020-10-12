@@ -16,5 +16,5 @@
 from hv_control.channel import Channel
 
 def test_channel():
-    channel = Channel('u0')
+    channel = Channel('channel')
     assert channel('outputSwitch', 1, dry_run=True) == 'snmpset -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputSwitch.u0 i 1'

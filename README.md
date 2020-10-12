@@ -4,15 +4,16 @@ Object-oriented python library to make the remote control of a MPOD Power Supply
 
 ## Description
 
-MPOD crates for the control of power supply modules, manufactured by the company WIENER [1,2], can be mounted on a network via DHCP and remote controlled using the Simple Network Management Protocol (SNMP, see, e.g., Ref. [3]).
+MPOD crates for the control of high-voltage (HV) power supply modules, manufactured by the company WIENER [1,2], can be mounted on a network via DHCP and remote controlled using the Simple Network Management Protocol (SNMP, see, e.g., Ref. [3]).
 Parameters of single channels of a module can be retrieved ('get') and 'set' using command-line instructions like [2]:
 
 ```
-snmpget -v 2c -M MIB_PATH -m +WIENER-CRATE-MIB -c COMMUNITY_GROUP IP_ADDRESS OID.SUFFIX
-snmpset -v 2c -M MIB_PATH -m +WIENER-CRATE-MIB -c COMMUNITY_GROUP IP_ADDRESS OID.SUFFIX FORMAT VALUE
+snmpget OPTIONS -v 2c -M MIB_PATH -m +WIENER-CRATE-MIB -c COMMUNITY_GROUP IP_ADDRESS OID.SUFFIX
+snmpset OPTIONS -v 2c -M MIB_PATH -m +WIENER-CRATE-MIB -c COMMUNITY_GROUP IP_ADDRESS OID.SUFFIX FORMAT VALUE
 ```
 
 In the two examples above, `-v 2c` specifies the SNMP version.
+This command is not listed with the other optional `OPTIONS` because the manual implies that only this version can be used.
 The variable `MIB_PATH` is the path to the management information base (MIB) file.
 This MIB file '+WIENER-CRATE-MIB' contains a list of all available instructions of the crate.
 In order to regulate access to parameters of the power supply system, different community groups ('public', 'private', 'admin', 'guru') exist with different permissions.
@@ -24,20 +25,123 @@ In the case that a parameter is modified, the data type (`FORMAT`) and the new v
 
 It is obvious that the bare SNMP commands are very verbose and repetitive, so any frequent user will write some kind of script to simplify the remote control.
 Due to the hierarchic and modular structure of the problem, it was chosen here to represent crates, modules, channels, and the actions that any of these entities may execute, as python classes.
-For example, a crate contains several modules, so a virtual crate should be a container for module objects.
-The repetitiveness and verbosity was reduced through the use of inheritance.
-For example, a set command has many elements in common with a get command, but in addition it takes an argument as an input.
-There is no need to repeat all the code that produces the command string, but it can simply be inherited from the get command.
+For example, a real crate contains several modules, so a virtual crate should be a container class for module objects.
+The repetitiveness and verbosity was reduced through the use of multiple dispatch: A single object represents both the respective 'get'- and 'set' command, and it returns the desried command depending on the number of arguments (no argument means: this parameter should be read).
+
+## Implementation
+
+Several python classes have been implemented that reflect the hierarchy and modularity of the actual setup.
+From top to bottom in the hierarchy, the following base classes exist:
+
+ * `Crate`
+ * `Module`
+ * `Channel`
+ * `Command`
+
+Any class `A`, which is on top of a class `B`, is also a container class for objects of type `B`.
+For example, a crate may contain a set of modules.
+While the base classes put no constraints on their properties, derived classes exist that represent actual models.
+For example, the `Crate` class has the property `n_slots` which indicates how many modules fit into the crate.
+In the `Mpod_Mini` class, which is derived from `Crate`, `n_slots` is set to 4 in its overriden `__init__()` method, because a WIENER Mpod Mini has exactly 4 slots.
+
+Objects of type `B` are stored within `A` as a python dictionary.
+This allows one to address the stored objects by a string identifier instead of an integer index, in accordance with the 'u*' nomenclature in the SNMP commands for the module channels.
+New objects should be added using the respective `add_*` methods of the container class, because they perform some checks before actually creating a new dictionary entry.
+For example, the `Crate.add_module()` method prevents the user from inserting two modules into the same slot.
+
+At the moment, there are no derived classes from the base classes `Channel` and `Command`, and the available commands for each channel are initialized automatically.
+They are stored in a dictionary as well, where the key is the OID of the respective SNMP command.
+Each channel has the commands listed as 'commonly needed' in the WIENER manual [2].
+Commands are intended to be executed by calling (`__call__()`) the respective channel.
+For example, to create a channel and execute its 'outputStatus' command, one would do:
+
+```
+from hv_control.channel import Channel
+
+channel = Channel('channel_name')
+# Get
+channel('outputSwitch')
+# Complete command: 
+# channel('outputSwitch', argument=None, community='public', dry_run=False)
+#
+# Set
+channel('outputSwitch', argument=0)
+```
+
+Depending on the value of the optional argument 'argument', the command will act as a get ('snmpget') or set ('snmpset') instruction.
+Every command has a required argument type, which is determined on initialization.
+Pure get commands have the argument type `None`.
+The 'community' argument defines the SNMP community, as described above.
+It should be avoided to write down the community names anywhere in scripts, because they serve as a password protection for the HV control.
+Making 'community' an argument of every single command call supports this philosophy by discouraging a global setting of the community.
+For example, the community could have been implemented as a property of the `Crate` class, which might allow anyone with the correct config file (see below) to run commands with high privileges.
+By default, a command is transmitted to the command line using the `subprocess` module of python.
+In order to test the commands, one could execute them as a member of the 'public' community, which will not allow any potentially harmful 'set' commands.
+Since this procedure prints error messages on the command line as well, `Channel.__call__()` also provides a 'dry_run' flag.
+If activated, the command will not be executed, but its string will be returned.
 
 ## Installation
 
-In order to make the hv_control libraries available on your system, execute 
+In order to make the `hv_control` libraries available on your system, execute 
 
 ```
 python setup.py install
 ``` 
 
 in the directory where the `setup.py` file is located.
+
+## Usage
+
+For HV systems, it can be assumed that the parameters of the channels are modified more often than the actual physical configuration is changed.
+Therefore, it is recommended to create one file that contains the setup (called 'config.py' here).
+This configuration can be imported by scripts that set the parameters.
+Below, you can find a minimal example that constructs a crate that contains a single module, which in turn has a single active channel:
+
+```
+# Content of 'config.py'
+
+from hv_control.crate import Mpod_Mini
+from hv_control.module import EHS_8260p
+from hv_control.channel import Channel
+
+crate = Mpod_Mini('crate_name', '0.0.0.0')                 # (a)
+crate.add_module(EHS_8260('module_name'), 0)               # (b)
+crate.modules['0'].add_channel(Channel('channel_name'), 0) # (c)
+```
+
+In (a), the crate is created.
+It has an arbitrary name and an IP address.
+Using the `add_module` method, a module with an arbitrary name is inserted in the crate at slot 0 (b).
+In (c), channel 0 of the module is made available.
+
+The example script below first queries the status of the channel above.
+If the channel is switched off, it switches it on and ramps it up.
+During the ramp-up process, the sense voltage and the current are printed every 5 seconds.
+
+```
+# Content of 'channel_name_on.py'
+
+from config import crate
+
+module = '0'
+channel = 'u0'
+
+if crate.modules[module].channels[channel]('outputStatus') == TODO:
+    # Set output voltage to 1000 V
+    crate.modules[module].channels[channel]('outputVoltage', 1000)
+    # Set rise rate to 10 V/s
+    crate.modules[module].channels[channel]('outputVoltageRiseRate', 10)
+    # Switch channel on
+    crate.modules[module].channels[channel]('outputSwitch', 1)
+
+while True:
+    crate.modules[module].channels[channel]('outputMeasurementCurrent')
+    crate.modules[module].channels[channel]('outputMeasurementSenseVoltage')
+```
+
+Note that the ramp-up process starts as soon as the 'outputSwitch' is turned on, and that it cannot be stopped by stopping the execution of the script.
+The preferred way to interrupt an ongoing ramp-up process is to execute another SNMP command that sets the 'outputSwitch' parameter to 0 or modifies the 'outputVoltage'.
+This behavior is intentional, since it largely decouples the HV crate from the server that controls it.
 
 ## License
 
