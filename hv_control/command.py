@@ -26,17 +26,18 @@ class Command:
         opt_and_arg_str = self.option_and_argument_string(
             ip_address, oid_suffix, community=community, argument=argument
         )
+        com_opt_arg_str = '{} {}'.format(com_str, opt_and_arg_str)	
 
         if dry_run:
-            return '{} {}'.format(com_str, opt_and_arg_str)
+            return com_opt_arg_str
         else:
-            subprocess.run([com_str, opt_and_arg_str])
+            subprocess.run(com_opt_arg_str.split())
 
     def argument_type_string(self):
         if self.argument_type == int:
             return 'i'
         elif self.argument_type == float:
-            return 'f'
+            return 'F'
         else:
             raise ValueError('No string representation for argument \
 of type {} defined'.format(self.argument_type))
@@ -62,7 +63,7 @@ of type {} defined'.format(self.argument_type))
         return '{}{}{} -c {} {} {}.{}'.format(
             self.special_options(argument),
             '' if self.special_options(argument) == '' else ' ', 
-            '-v 2c -M +WIENER-CRATE-MIB',
+            '-v 2c -m +WIENER-CRATE-MIB',
             community, ip_address, self.name, 
             oid_suffix
         )

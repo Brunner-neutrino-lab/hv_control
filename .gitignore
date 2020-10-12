@@ -5,6 +5,7 @@ dist
 htmlcov
 hv_control/__pycache__
 hv_control.egg-info
+*.pyc
 .pytest_cache
 tests/__pycache__
 .tox

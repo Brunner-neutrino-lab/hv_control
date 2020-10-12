@@ -24,15 +24,15 @@ class Channel:
         
         self.commands = {
             'outputCurrent':
-            Command('outputCurrent', int),
+            Command('outputCurrent', float),
             'outputStatus':
             Command('outputStatus', None),
             'outputSwitch':
             Command('outputSwitch', int),
             'outputVoltageRiseRate':
-            Command('outputVoltageRiseRate', int),
+            Command('outputVoltageRiseRate', float),
             'outputVoltage':
-            Command('outputVoltage', int),
+            Command('outputVoltage', float),
         }
 
     def __call__(self, command_name, argument=None, community='public', dry_run=False):
