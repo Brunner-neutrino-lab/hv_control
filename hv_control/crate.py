@@ -34,10 +34,10 @@ class Crate:
         self.check_slot_free(module, slot)
         
     def check_slot_in_range(self, module, slot):
-        if slot < 1 or slot > self.n_slots:
+        if slot < 0 or slot > self.n_slots - 1:
             raise ValueError('Invalid slot ({:d}) given. \
-The crate only has slots between 1 and {:d}.'.format(
-                slot, self.n_slots))
+The crate only has slots between 0 and {:d}.'.format(
+                slot, self.n_slots-1))
     def check_slot_free(self, module, slot):
         for m in self.modules:
             if self.modules[m].slot == slot:

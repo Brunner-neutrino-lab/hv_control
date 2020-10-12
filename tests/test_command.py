@@ -28,10 +28,10 @@ class TestCommand:
         get_cmd_str = outputSwitch.command_string(None)
         get_opt_and_arg_str = outputSwitch.option_and_argument_string(ip_address, oid_suffix)
 
-        assert outputSwitch(ip_address, oid_suffix, dry_run=True) == 'snmpget -Oqv -v 2c -M +WIENER-CRATE-MIB -c public {} {}.{}'.format(ip_address, name, oid_suffix)
+        assert outputSwitch(ip_address, oid_suffix, dry_run=True) == 'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public {} {}.{}'.format(ip_address, name, oid_suffix)
 
         fake_process.register_subprocess(
-            [get_cmd_str, get_opt_and_arg_str]
+            '{} {}'.format(get_cmd_str, get_opt_and_arg_str).split()
         )
 
         outputSwitch(ip_address, oid_suffix)
@@ -39,10 +39,10 @@ class TestCommand:
         set_cmd_str = outputSwitch.command_string(1)
         set_opt_and_arg_str = outputSwitch.option_and_argument_string(ip_address, oid_suffix, argument=1)
 
-        assert outputSwitch(ip_address, oid_suffix, argument=1, dry_run=True) == 'snmpset -v 2c -M +WIENER-CRATE-MIB -c public {} {}.{} i 1'.format(ip_address, name, oid_suffix)
+        assert outputSwitch(ip_address, oid_suffix, argument=1, dry_run=True) == 'snmpset -v 2c -m +WIENER-CRATE-MIB -c public {} {}.{} i 1'.format(ip_address, name, oid_suffix)
 
         fake_process.register_subprocess(
-            [set_cmd_str, set_opt_and_arg_str]
+            '{} {}'.format(set_cmd_str, set_opt_and_arg_str).split()
         )
 
         outputSwitch(ip_address, oid_suffix, argument=1)

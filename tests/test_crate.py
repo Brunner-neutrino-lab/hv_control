@@ -21,10 +21,10 @@ from hv_control.module import EHS_8260p
 def test_module():
     crate = Mpod_Mini('crate', '0.0.0.0')
 
-    crate.add_module(EHS_8260p('module'), 1)
+    crate.add_module(EHS_8260p('module'), 0)
+    with pytest.raises(ValueError):
+        crate.add_module(EHS_8260p('module'), crate.n_slots)
     with pytest.raises(ValueError):
         crate.add_module(EHS_8260p('module'), 0)
-    with pytest.raises(ValueError):
-        crate.add_module(EHS_8260p('module'), 1)
     with pytest.raises(AssertionError):
         crate.add_module(0, 1)
