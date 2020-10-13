@@ -26,15 +26,17 @@ class Channel:
 
         self.commands = {
             'outputCurrent':
-            Command('outputCurrent', float, lambda argument : argument >= 0. and argument <= max_current),
+            Command('outputCurrent', (float, ), lambda argument : argument >= 0. and argument <= max_current),
+            'outputMeasurementSenseVoltage':
+            Command('outputMeasurementSenseVoltage', None),
             'outputStatus':
             Command('outputStatus', None),
             'outputSwitch':
-            Command('outputSwitch', int, lambda argument : argument in (0, 1, 10)),
+            Command('outputSwitch', (int, ), lambda argument : argument in (0, 1, 10)),
             'outputVoltageRiseRate':
-            Command('outputVoltageRiseRate', float),
+            Command('outputVoltageRiseRate', (int, float)),
             'outputVoltage':
-            Command('outputVoltage', float, lambda argument : argument >= 0. and argument <= max_voltage),
+            Command('outputVoltage', (int, float), lambda argument : argument >= 0. and argument <= max_voltage),
         }
 
     def __call__(self, command_name, argument=None, community='public', dry_run=False):

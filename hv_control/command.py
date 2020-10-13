@@ -36,10 +36,10 @@ class Command:
             subprocess.run(com_opt_arg_str.split())
 
     def argument_type_string(self):
-        if self.argument_type == int:
-            return 'i'
-        elif self.argument_type == float:
+        if float in self.argument_type:
             return 'F'
+        elif int in self.argument_type:
+            return 'i'
         else:
             raise ValueError('No string representation for argument \
 of type {} defined'.format(self.argument_type))
