@@ -20,7 +20,7 @@ from hv_control.command import Command
 class TestCommand:
     def test_command_with_argument(self, fake_process):
         name = 'outputSwitch'
-        outputSwitch = Command(name, argument_type=int)
+        outputSwitch = Command(name, argument_type=(int, ))
 
         ip_address = '0.0.0.0'
         oid_suffix = 'u0'
@@ -50,10 +50,10 @@ class TestCommand:
         with pytest.raises(ValueError):
             outputSwitch(ip_address, oid_suffix, argument=1.)
 
-        outputVoltage = Command('outputVoltage', float)
+        outputVoltage = Command('outputVoltage', (float, ))
         outputVoltage(ip_address, oid_suffix, argument=1., dry_run=True)
 
-        boolCommand = Command('boolCommand', bool)
+        boolCommand = Command('boolCommand', (bool, ))
         with pytest.raises(ValueError):
             boolCommand(ip_address, oid_suffix, argument=True)
 
