@@ -13,13 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
+from ipaddress import IPv4Address
 import pytest
 
 from hv_control.crate import Mpod_Mini
 from hv_control.module import EHS_8260p
 
-def test_module():
+def test_crate():
+    crate = Mpod_Mini('crate', IPv4Address('0.0.0.0'))
     crate = Mpod_Mini('crate', '0.0.0.0')
+    with pytest.raises(ValueError):
+        crate = Mpod_Mini('crate', 1)
 
     crate.add_module(EHS_8260p('module'), 0)
     with pytest.raises(ValueError):
