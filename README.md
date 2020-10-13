@@ -82,6 +82,18 @@ If activated, the command will not be executed, but its string will be returned.
 
 ## Installation
 
+### Prerequisites
+
+ * [python3](https://www.python.org/)
+
+The following packages are required to run self-tests:
+
+ * [pytest](https://docs.pytest.org/)
+ * [pytest-cov](https://pytest-cov.readthedocs.io/)
+ * [tox](https://tox.readthedocs.io/)
+
+### Procedure
+
 In order to make the `hv_control` libraries available on your system, execute 
 
 ```
@@ -89,6 +101,13 @@ python setup.py install
 ``` 
 
 in the directory where the `setup.py` file is located.
+A self-test of `hv_control` can be run by executing
+
+```
+tox
+```
+
+in the same directory.
 
 ## Usage
 
