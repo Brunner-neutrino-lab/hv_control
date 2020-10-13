@@ -13,31 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
+from hv_control.dictionary_container import DictionaryContainer
 from hv_control.command import Command
 
-class Channel:
-    def __init__(self, name, max_voltage=None, max_current=None):
-        self.name = name
-        self.max_voltage = max_voltage
-        self.max_current = max_current
+class Channel(DictionaryContainer):
+    def __init__(self, name, max_abs_voltage=None, max_abs_current_ramp=None, max_abs_current_standby=None):
+        DictionaryContainer.__init__(self, name, Command)
 
-        self.ip_address = '0.0.0.0'
-        self.oid_suffix = 'u0'
+        self.max_abs_voltage = max_abs_voltage
+        self.max_abs_current_ramp = max_abs_current_ramp
+        self.max_abs_current_standby = max_abs_current_standby
 
-        self.commands = {
-            'outputCurrent':
-            Command('outputCurrent', (float, ), lambda argument : argument >= 0. and argument <= max_current),
-            'outputMeasurementSenseVoltage':
-            Command('outputMeasurementSenseVoltage', None),
-            'outputStatus':
-            Command('outputStatus', None),
-            'outputSwitch':
-            Command('outputSwitch', (int, ), lambda argument : argument in (0, 1, 10)),
-            'outputVoltageRiseRate':
-            Command('outputVoltageRiseRate', (int, float)),
-            'outputVoltage':
-            Command('outputVoltage', (int, float), lambda argument : argument >= 0. and argument <= max_voltage),
-        }
-
-    def __call__(self, command_name, argument=None, community='public', dry_run=False):
-        return self.commands[command_name](self.ip_address, self.oid_suffix, argument=argument, community=community, dry_run=dry_run)
+        self.add_value('outputCurrent', Command('outputCurrent', (float, ), lambda argument : argument >= 0. and argument <= self.max_abs_current_ramp))
+        self.add_value('outputMeasurementSenseVoltage', Command('outputMeasurementSenseVoltage', None))
+        self.add_value('outputStatus', Command('outputStatus', None)),
+        self.add_value('outputSwitch', Command('outputSwitch', (int, ), lambda argument : argument in (0, 1, 10)))
+        self.add_value('outputVoltageRiseRate', Command('outputVoltageRiseRate', (int, float)))
+        self.add_value('outputVoltage', Command('outputVoltage', (int, float), lambda argument : argument >= 0. and argument <= self.max_abs_voltage))

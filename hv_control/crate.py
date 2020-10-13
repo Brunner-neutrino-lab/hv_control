@@ -15,31 +15,18 @@
 
 from ipaddress import IPv4Address
 
+from hv_control.dictionary_container import DictionaryContainer
 from hv_control.module import Module
 
-class Crate:
-    def __init__(self, name, ip, n_slots):
-        self.ip = self.parse_ip(ip)
+class Crate(DictionaryContainer):
+    def __init__(self, name, n_slots, ip):
+        assert n_slots in range(10)
         self.n_slots = n_slots
+        DictionaryContainer.__init__(self, name, Module, key_is_valid=lambda key : key in range(0, self.n_slots))
+        self.ip = self.parse_ip(ip)
 
-        self.modules = {}
-
-    def add_module(self, module, module_number):
-        assert isinstance(module, Module)
-        self.check_module_number(module_number)
-        self.modules[module_number] = module
-
-    def check_module_number(self, module_number):
-        self.check_module_number_in_range(module_number)
-        self.check_module_number_free(module_number)
-
-    def check_module_number_in_range(self, module_number):
-        if module_number not in range(0, self.n_slots):
-            raise ValueError('Invalid module number. The crate has {:d} slots, i.e. module numbers may range from {:d} to {:d}.'.format(self.n_slots, 0, self.n_slots-1))
-
-    def check_module_number_free(self, module_number):
-        if module_number in self.modules:
-            raise ValueError('Module number {:d} is already occupied.'.format(module_number))
+    def add_module(self, module_number, module):
+        self.add_value(module_number, module)
 
     def parse_ip(self, ip):
         if isinstance(ip, IPv4Address):
@@ -47,8 +34,9 @@ class Crate:
         elif isinstance(ip, str):
             return IPv4Address(ip)
         else:
-            raise ValueError('IP address format not recognized. It is recommended to pass an IPv4Address object from the Python Standard Library to Crate.__init__().')
+            raise ValueError('IP address format not recognized. It is recommended to pass an \
+IPv4Address object from the Python Standard Library to Crate.__init__().')
 
 class Mpod_Mini(Crate):
-    def __init__(self, name, ip_address):
-        Crate.__init__(self, name, ip_address, 4)
+    def __init__(self, name, ip):
+        Crate.__init__(self, name, 4, ip)

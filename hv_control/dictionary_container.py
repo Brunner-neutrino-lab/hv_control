@@ -13,8 +13,24 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
-from hv_control.channel import Channel
+class DictionaryContainer:
+    def __init__(self, name, value_type, key_is_valid=lambda key : True):
+        self.name = name
+        self.value_type = value_type
+        self.key_is_valid = key_is_valid
 
-def test_channel():
-    Channel('channel')
+        self.dictionary = {}
+
+    def add_value(self, key, value):
+        assert isinstance(value, self.value_type)
+        self.check_key(key)
+        self.dictionary[key] = value
+
+    def check_key(self, key):
+        if not self.key_is_valid(key):
+            raise ValueError('Invalid key.')
+        self.key_is_free(key)
+
+    def key_is_free(self, key):
+        if key in self.dictionary:
+            raise ValueError('Key is already in use.')

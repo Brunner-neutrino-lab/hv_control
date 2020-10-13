@@ -16,14 +16,17 @@
 import pytest
 
 from hv_control.channel import Channel
-from hv_control.module import EHS_8260p, EHS_F5_30n
+from hv_control.module import EHS_8260p, EHS_F5_30n, Module
 
 def test_module():
     module = EHS_F5_30n('module')
     module = EHS_8260p('module')
 
-    module.add_channel(Channel('channel_0'), 0)
+    module.add_channel(0, Channel('channel_0'))
     with pytest.raises(ValueError):
-        module.add_channel(Channel('channel_1'), 0)
+        module.add_channel(0, Channel('channel_1'))
     with pytest.raises(ValueError):
-        module.add_channel(Channel('channel_1'), module.n_channels)
+        module.add_channel(module.n_channels, Channel('channel_1'))
+
+    with pytest.raises(AssertionError):
+        module = Module('module', 100, 1, 0., 0.)

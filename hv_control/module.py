@@ -13,51 +13,30 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
+from hv_control.dictionary_container import DictionaryContainer
 from hv_control.channel import Channel
 
-class Module:
-    def __init__(self, name, n_channels, 
-                 max_voltage, polarity, max_current):
-        self.name = name
+class Module(DictionaryContainer):
+    def __init__(self, name, n_channels, polarity, 
+                 abs_voltage_limit, abs_current_limit):
+        assert n_channels in range(100)
         self.n_channels = n_channels
-        self.max_voltage = max_voltage
+        DictionaryContainer.__init__(self, name, Channel, 
+        key_is_valid=lambda key : key in range(0, self.n_channels))
+
+        self.abs_voltage_limit = abs_voltage_limit
         self.polarity = polarity
-        self.max_current = max_current
+        self.abs_current_limit = abs_current_limit
 
-        self.ip_address = '0.0.0.0'
-        self.slot = 0
-        self.channels = {}
-
-    def add_channel(self, channel, address):
-        assert isinstance(channel, Channel)
-        self.check_address_in_range(channel, address)
-        oid_suffix = 'u{:d}{:02d}'.format(self.slot, address)
-        self.check_oid_suffix_free(channel, oid_suffix)
-        channel.ip_address = self.ip_address
-        channel.oid_suffix = oid_suffix
-        channel.max_voltage = self.max_voltage if channel.max_voltage is None else channel.max_voltage
-        channel.max_current = self.max_current if channel.max_current is None else channel.max_current
-        self.channels[channel.oid_suffix] = channel
-
-    def check_address_in_range(self, channel, address):
-        if address < 0 or address > self.n_channels-1:
-            raise ValueError('Invalid address ({:d}) given. \
-The module only has addresses between 0 and {:d}.'.format(
-                address, self.n_channels-1))
-
-    def check_oid_suffix_free(self, channel, oid_suffix):
-        for c in self.channels:
-            if self.channels[c].oid_suffix == oid_suffix:
-                raise ValueError('Invalid OID suffix ({}) given. \
-Channel {} is already occupied by \'{}\'.'.format(
-                    oid_suffix, oid_suffix, self.channels[c].name)) 
+    def add_channel(self, channel_number, channel):
+        self.add_value(channel_number, channel)
 
 class EHS_8260p(Module):
     def __init__(self, name):
         Module.__init__(self, name, n_channels=8, polarity=1, 
-                        max_voltage=6e3, max_current=1e-3)
+                        abs_voltage_limit=6e3, abs_current_limit=1e-3)
 
 class EHS_F5_30n(Module):
     def __init__(self, name):
         Module.__init__(self, name, n_channels=16, polarity=-1, 
-                        max_voltage=3e3, max_current=1e-3)
+                        abs_voltage_limit=3e3, abs_current_limit=1e-3)
