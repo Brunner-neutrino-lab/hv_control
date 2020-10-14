@@ -30,6 +30,12 @@ class Module(DictionaryContainer):
 
     def add_channel(self, channel_number, channel):
         self.add_value(channel_number, channel)
+        if self[channel_number].max_abs_voltage is None:
+            self[channel_number].max_abs_voltage = self.abs_voltage_limit
+        if self[channel_number].max_abs_current_ramp is None:
+            self[channel_number].max_abs_current_ramp = self.abs_current_limit
+        if self[channel_number].max_abs_current_standby is None:
+            self[channel_number].max_abs_current_standby = self.abs_current_limit
 
 class EHS_8260p(Module):
     def __init__(self, name):
