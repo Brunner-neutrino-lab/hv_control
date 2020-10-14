@@ -2,6 +2,19 @@
 
 Object-oriented python library to make the remote control of a MPOD Power Supply System simple and safe.
 
+## Contents
+
+ * [Description](#description)
+ * [Implementation](#implementation)
+ * [Installation](#installation)
+   
+   * [Prerequisites](#prerequisites)
+   * [Procedure](#procedure)
+   * [Testing](#testing)
+ * [Usage](#usage)
+ * [License](#license)
+ * [References](#references)
+
 ## Description
 
 MPOD crates for the control of high-voltage (HV) power supply modules, manufactured by the company WIENER [1,2], can be mounted on a network via DHCP and remote controlled using the Simple Network Management Protocol (SNMP, see, e.g., Ref. [3]).
@@ -54,7 +67,7 @@ At the moment, there are no derived classes from the base classes `Channel` and 
 They are stored in a dictionary as well, where the key is the OID of the respective SNMP command.
 Each channel has almost all the commands listed as 'commonly needed' in the WIENER manual [2].
 Commands for a channel are intended to be executed by calling (`__call__(SUFFIX, argument=VALUE)`) the crate that contains it with the corresponding suffix and, potentially, an argument.
-For an example of how to create a setup and channels, see the 'Usage' section.
+For an example of how to create a setup and channels, see the [Usage](#usage) section.
 
 Every command has a required argument type, which is determined on initialization.
 Pure get commands have the argument type `None`.
@@ -77,6 +90,7 @@ The following packages are required to run self-tests:
 
  * [pytest](https://docs.pytest.org/)
  * [pytest-cov](https://pytest-cov.readthedocs.io/)
+ * [pytest-subprocess](https://pytest-subprocess.readthedocs.io)
  * [tox](https://tox.readthedocs.io/)
 
 ### Procedure
@@ -88,6 +102,9 @@ python setup.py install
 ``` 
 
 in the directory where the `setup.py` file is located.
+
+### Testing
+
 A self-test of `hv_control` can be run by executing
 
 ```
@@ -171,5 +188,7 @@ Copyright (C) 2020 Udo Friman-Gayer (ufg@email.unc.edu)
 ## References
 
 [1] [http://www.wiener-d.com/sc/power-supplies/mpod--lvhv/](http://www.wiener-d.com/sc/power-supplies/mpod--lvhv/)
+
 [2] WIENER Power Electronics GmbH, 'MPOD HV & LV Power Supply System Technical Manual  Version 3.2' (2020)[https://file.wiener-d.com/documentation/MPOD/](https://file.wiener-d.com/documentation/MPOD/)
+
 [3] [http://www.net-snmp.org/](http://www.net-snmp.org/)
