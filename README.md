@@ -26,7 +26,7 @@ In the case that a parameter is modified, the data type (`FORMAT`) and the new v
 It is obvious that the bare SNMP commands are very verbose and repetitive, so any frequent user will write some kind of script to simplify the remote control.
 Due to the hierarchic and modular structure of the problem, it was chosen here to represent crates, modules, channels, and the actions that any of these entities may execute, as python classes.
 For example, a real crate contains several modules, so a virtual crate should be a container class for module objects.
-The repetitiveness and verbosity was reduced through the use of multiple dispatch: A single object represents both the respective 'get'- and 'set' command, and it returns the desried command depending on the number of arguments (no argument means: this parameter should be read).
+The repetitiveness and verbosity was reduced through the use of multiple dispatch: A single object represents both the respective 'get'- and 'set' command, and it returns the desired command depending on the number of arguments (no argument means: this parameter should be read).
 
 ## Implementation
 
@@ -45,30 +45,17 @@ For example, the `Crate` class has the property `n_slots` which indicates how ma
 In the `Mpod_Mini` class, which is derived from `Crate`, `n_slots` is set to 4 in its overriden `__init__()` method, because a WIENER Mpod Mini has exactly 4 slots.
 
 Objects of type `B` are stored within `A` as a python dictionary.
-This allows one to address the stored objects by a string identifier instead of an integer index, in accordance with the 'u*' nomenclature in the SNMP commands for the module channels.
+This allows one to address the stored objects by an arbitrary identifier instead of an integer index.
+This way, it is possible to be in accordance with the 'u*' nomenclature in the SNMP commands for the module channels.
 New objects should be added using the respective `add_*` methods of the container class, because they perform some checks before actually creating a new dictionary entry.
 For example, the `Crate.add_module()` method prevents the user from inserting two modules into the same slot.
 
 At the moment, there are no derived classes from the base classes `Channel` and `Command`, and the available commands for each channel are initialized automatically.
 They are stored in a dictionary as well, where the key is the OID of the respective SNMP command.
-Each channel has the commands listed as 'commonly needed' in the WIENER manual [2].
-Commands are intended to be executed by calling (`__call__()`) the respective channel.
-For example, to create a channel and execute its 'outputStatus' command, one would do:
+Each channel has almost all the commands listed as 'commonly needed' in the WIENER manual [2].
+Commands for a channel are intended to be executed by calling (`__call__(SUFFIX, argument=VALUE)`) the crate that contains it with the corresponding suffix and, potentially, an argument.
+For an example of how to create a setup and channels, see the 'Usage' section.
 
-```
-from hv_control.channel import Channel
-
-channel = Channel('channel_name')
-# Get
-channel('outputSwitch')
-# Complete command: 
-# channel('outputSwitch', argument=None, community='public', dry_run=False)
-#
-# Set
-channel('outputSwitch', argument=0)
-```
-
-Depending on the value of the optional argument 'argument', the command will act as a get ('snmpget') or set ('snmpset') instruction.
 Every command has a required argument type, which is determined on initialization.
 Pure get commands have the argument type `None`.
 The 'community' argument defines the SNMP community, as described above.
@@ -119,43 +106,45 @@ Below, you can find a minimal example that constructs a crate that contains a si
 ```
 # Content of 'config.py'
 
-from hv_control.crate import Mpod_Mini
-from hv_control.module import EHS_8260p
-from hv_control.channel import Channel
+from ipaddress import IPv4Address
 
-crate = Mpod_Mini('crate_name', '0.0.0.0')                 # (a)
-crate.add_module(EHS_8260('module_name'), 0)               # (b)
-crate.modules['0'].add_channel(Channel('channel_name'), 0) # (c)
+from hv_control.channel import Channel
+from hv_control.crate import Mpod_Mini
+from hv_control.module import EHS_8260p, EHS_F5_30n
+
+mpod = Mpod_Mini('utr-mpod-0', IPv4Address('192.168.0.237')) # (a)
+mpod.add_module(1, EHS_8260p('germanium_hv'))                # (b)
+mpod[1].add_channel(0, Channel('clover_USNA',                # (c)
+    max_abs_voltage=3500., max_abs_current_ramp=1e-6, max_abs_current_standby=1e-8)
+)
 ```
 
 In (a), the crate is created.
 It has an arbitrary name and an IP address.
 Using the `add_module` method, a module with an arbitrary name is inserted in the crate at slot 0 (b).
-In (c), channel 0 of the module is made available.
+In (c), channel 0 of the module is made available, and voltage and current limits are set.
 
-The example script below first queries the status of the channel above.
-If the channel is switched off, it switches it on and ramps it up.
-During the ramp-up process, the sense voltage and the current are printed every 5 seconds.
+The example script below first sets the output voltage of a channel and the voltage rise rate. 
+After that, it switches the channel on, thereby starting the ramp-up process.
+During the ramp-up process, the sense voltage is printed every 5 seconds.
 
 ```
-# Content of 'channel_name_on.py'
+# Content of 'u100_ramp_up.py'
+
+from time import sleep
 
 from config import crate
 
-module = '0'
-channel = 'u0'
-
-if crate.modules[module].channels[channel]('outputStatus') == TODO:
-    # Set output voltage to 1000 V
-    crate.modules[module].channels[channel]('outputVoltage', 1000)
-    # Set rise rate to 10 V/s
-    crate.modules[module].channels[channel]('outputVoltageRiseRate', 10)
-    # Switch channel on
-    crate.modules[module].channels[channel]('outputSwitch', 1)
+# Set output voltage to 3500 V
+mpod.modules['u100']('outputVoltage', 3500)
+# Set rise rate to 10 V/s
+mpod.modules['u100']('outputVoltageRiseRate', 10)
+# Switch channel on
+mpod.modules['u100']('outputSwitch', 1)
 
 while True:
-    crate.modules[module].channels[channel]('outputMeasurementCurrent')
-    crate.modules[module].channels[channel]('outputMeasurementSenseVoltage')
+    mpod.modules['u100']('outputMeasurementSenseVoltage')
+    sleep(5)
 ```
 
 Note that the ramp-up process starts as soon as the 'outputSwitch' is turned on, and that it cannot be stopped by stopping the execution of the script.
