@@ -28,6 +28,12 @@ class Crate(DictionaryContainer):
     def add_module(self, module_number, module):
         self.add_value(module_number, module)
 
+    def __call__(self, oid_with_suffix, community='public', argument=None, dry_run=False):
+        oid, suffix = self.parse_oid_with_suffix(oid_with_suffix)
+        module_number, channel_number = self.parse_suffix(suffix)
+
+        self[module_number][channel_number][oid](self.ip, suffix, community=community, argument=argument, dry_run=dry_run)
+
     def parse_ip(self, ip):
         if isinstance(ip, IPv4Address):
             return ip
@@ -36,6 +42,21 @@ class Crate(DictionaryContainer):
         else:
             raise ValueError('IP address format not recognized. It is recommended to pass an \
 IPv4Address object from the Python Standard Library to Crate.__init__().')
+
+    def parse_oid_with_suffix(self, oid_with_suffix):
+        if not isinstance(oid_with_suffix, str) or '.' not in oid_with_suffix:
+            raise ValueError('Expected string with the format \'OID.SUFFIX\'.')
+        return oid_with_suffix.split('.')
+
+    def parse_suffix(self, suffix):
+        if not len(suffix) in range(2,5):
+            raise ValueError('Suffix must consist of 2 to 4 symbols.')
+        if suffix[0] not in ('u', 'U'):
+            raise ValueError('Suffix must start with \'u\' or \'U\'.')
+        if len(suffix) < 4:
+            return (0, int(suffix[1:]))
+        
+        return (int(suffix[1]), int(suffix[2:]))
 
 class Mpod_Mini(Crate):
     def __init__(self, name, ip):

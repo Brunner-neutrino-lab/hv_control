@@ -13,52 +13,69 @@
 # You should have received a copy of the GNU General Public License
 # along with hv_control.  If not, see <https://www.gnu.org/licenses/>.
 
+from ipaddress import IPv4Address
+
 import pytest
 import pytest_subprocess
 from hv_control.command import Command
 
 class TestCommand:
-    def test_command_with_argument(self, fake_process):
-        name = 'outputSwitch'
-        outputSwitch = Command(name, argument_type=(int, ))
-
-        ip_address = '0.0.0.0'
-        oid_suffix = 'u0'
-
-        get_cmd_str = outputSwitch.command_string(None)
-        get_opt_and_arg_str = outputSwitch.option_and_argument_string(ip_address, oid_suffix)
-
-        assert outputSwitch(ip_address, oid_suffix, dry_run=True) == 'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public {} {}.{}'.format(ip_address, name, oid_suffix)
-
-        fake_process.register_subprocess(
-            '{} {}'.format(get_cmd_str, get_opt_and_arg_str).split()
-        )
-
-        outputSwitch(ip_address, oid_suffix)
-
-        set_cmd_str = outputSwitch.command_string(1)
-        set_opt_and_arg_str = outputSwitch.option_and_argument_string(ip_address, oid_suffix, argument=1)
-
-        assert outputSwitch(ip_address, oid_suffix, argument=1, dry_run=True) == 'snmpset -v 2c -m +WIENER-CRATE-MIB -c public {} {}.{} i 1'.format(ip_address, name, oid_suffix)
-
-        fake_process.register_subprocess(
-            '{} {}'.format(set_cmd_str, set_opt_and_arg_str).split()
-        )
-
-        outputSwitch(ip_address, oid_suffix, argument=1)
-
-        with pytest.raises(ValueError):
-            outputSwitch(ip_address, oid_suffix, argument=1.)
-
-        outputVoltage = Command('outputVoltage', (float, ))
-        outputVoltage(ip_address, oid_suffix, argument=1., dry_run=True)
-
-        boolCommand = Command('boolCommand', (bool, ))
-        with pytest.raises(ValueError):
-            boolCommand(ip_address, oid_suffix, argument=True)
-
-    def test_command_without_argument(self):
+    def test_command_without_argument(self, fake_process):
         outputStatus = Command('outputStatus', argument_type=None)
 
+        command_string = 'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputStatus.u0'
+        fake_process.register_subprocess(command_string.split())
+        outputStatus(IPv4Address('0.0.0.0'), 'u0')
+
+        assert outputStatus(IPv4Address('0.0.0.0'), 'u0', dry_run=True) == command_string
+
         with pytest.raises(ValueError):
-            outputStatus('0.0.0.0', 'u0', argument=0)
+            outputStatus(IPv4Address('0.0.0.0'), 'u0', argument=0)
+
+    def test_command_with_integer_argument(self, fake_process):
+        outputSwitch = Command('outputSwitch', (int, ), lambda argument : argument in (0, 1, 10))
+
+        get_command_string = 'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputSwitch.u0'
+        fake_process.register_subprocess(get_command_string.split())
+        outputSwitch(IPv4Address('0.0.0.0'), 'u0')
+
+        set_command_string = 'snmpset -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputSwitch.u0 i 0'
+        fake_process.register_subprocess(set_command_string.split())
+        outputSwitch(IPv4Address('0.0.0.0'), 'u0', argument=0)
+
+        assert outputSwitch(IPv4Address('0.0.0.0'), 'u0', argument=0, dry_run=True) == set_command_string
+
+        with pytest.raises(ValueError):
+            outputSwitch(IPv4Address('0.0.0.0'), 'u0', argument=2)
+        with pytest.raises(ValueError):
+            outputSwitch(IPv4Address('0.0.0.0'), 'u0', argument=1.)
+
+    def test_command_with_float_argument(self, fake_process):
+        outputVoltage = Command('outputVoltage', (int, float), lambda argument : argument >= 0. and argument <= 1000.)
+
+        get_command_string = 'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputVoltage.u0'
+        fake_process.register_subprocess(get_command_string.split())
+        outputVoltage(IPv4Address('0.0.0.0'), 'u0')
+
+        set_command_string = 'snmpset -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputVoltage.u0 F 0.0'
+        fake_process.register_subprocess(set_command_string.split())
+        outputVoltage(IPv4Address('0.0.0.0'), 'u0', argument=0.)
+
+        assert outputVoltage(IPv4Address('0.0.0.0'), 'u0', argument=0.0, dry_run=True) == set_command_string
+
+        set_command_string = 'snmpset -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputVoltage.u0 F 0'
+        fake_process.register_subprocess(set_command_string.split())
+        outputVoltage(IPv4Address('0.0.0.0'), 'u0', argument=0)
+        
+        assert outputVoltage(IPv4Address('0.0.0.0'), 'u0', argument=0, dry_run=True) == set_command_string
+
+        with pytest.raises(ValueError):
+            outputVoltage(IPv4Address('0.0.0.0'), 'u0', argument=1500.)
+        with pytest.raises(ValueError):
+            outputVoltage(IPv4Address('0.0.0.0'), 'u0', argument='a')
+
+    def test_command_with_unknown_argument(self):
+        unknownCommand = Command('unknownCommand', (bool, ))
+
+        with pytest.raises(ValueError):
+            unknownCommand(IPv4Address('0.0.0.0'), 'u0', argument=True)

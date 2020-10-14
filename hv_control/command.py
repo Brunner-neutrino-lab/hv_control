@@ -41,8 +41,8 @@ class Command:
         elif int in self.argument_type:
             return 'i'
         else:
-            raise ValueError('No string representation for argument \
-of type {} defined'.format(self.argument_type))
+            raise ValueError('Commands with arguments \
+of type {} are currently not supported.'.format(self.argument_type))
 
     def command_string(self, argument):
         if argument is not None:
@@ -72,11 +72,11 @@ of type {} defined'.format(self.argument_type))
 
     def argument_string(self, argument):
         if argument is not None:
-            if not self.argument_is_valid(argument):
-                raise ValueError('Invalid argument for command')
             if self.argument_type is None:
                 raise ValueError('Command does not take arguments')
             if not isinstance(argument, self.argument_type):
                 raise ValueError('Argument must be of type \'\''.format(str(self.argument_type)))
+            if not self.argument_is_valid(argument):
+                raise ValueError('Invalid argument for command')
             return '{} {}'.format(self.argument_type_string(), str(argument))
         return ''

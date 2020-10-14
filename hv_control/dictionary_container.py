@@ -31,6 +31,9 @@ class DictionaryContainer:
             raise ValueError('Invalid key.')
         self.key_is_free(key)
 
+    def __getitem__(self, key):
+        return self.dictionary[key]
+
     def key_is_free(self, key):
         if key in self.dictionary:
             raise ValueError('Key is already in use.')
