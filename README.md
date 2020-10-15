@@ -127,7 +127,7 @@ from ipaddress import IPv4Address
 
 from hv_control.channel import Channel
 from hv_control.crate import Mpod_Mini
-from hv_control.module import EHS_8260p, EHS_F5_30n
+from hv_control.module import EHS_8260p
 
 mpod = Mpod_Mini('utr-mpod-0', IPv4Address('192.168.0.237')) # (a)
 mpod.add_module(1, EHS_8260p('germanium_hv'))                # (b)
@@ -153,14 +153,14 @@ from time import sleep
 from config import crate
 
 # Set output voltage to 3500 V
-mpod.modules['u100']('outputVoltage', 3500)
+mpod('outputVoltage.u100', 3500)
 # Set rise rate to 10 V/s
-mpod.modules['u100']('outputVoltageRiseRate', 10)
+mpod('outputVoltageRiseRate.u100', 10)
 # Switch channel on
-mpod.modules['u100']('outputSwitch', 1)
+mpod('outputSwitch.u100', 1)
 
 while True:
-    mpod.modules['u100']('outputMeasurementSenseVoltage')
+    mpod('outputMeasurementSenseVoltage.u100')
     sleep(5)
 ```
 

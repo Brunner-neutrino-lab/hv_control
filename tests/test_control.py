@@ -30,6 +30,7 @@ from .test_config import mpod
 # illustration purposes, therefore the following two import statements are needed.
 from hv_control.channel import Channel
 from hv_control.module import EHS_8260p
+from hv_control.oid import OIDAndSuffix, Suffix
 
 def test_control(fake_process):
     # Test a command which takes no arguments ('outputStatus')
@@ -42,6 +43,25 @@ def test_control(fake_process):
     # Get the 'outputStatus' of channel 'u100'.
     # This is done by calling the crate with the OID 'outputStatus' and the corresponding suffix.
     mpod('outputStatus.u100')
+    # The following commands show alternative ways of passing a combination of OID and suffix \
+    # to the crate by using an `OIDAndSuffix` object.
+    # The `OIDAndSuffix` object is used internally by `hv_control` to enforce a correct format of the OID and the suffix.
+    fake_process.register_subprocess(
+        'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public {} outputStatus.u100'.format(mpod.ip).split()
+    )
+    mpod(OIDAndSuffix('outputStatus.u100'))
+    fake_process.register_subprocess(
+        'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public {} outputStatus.u100'.format(mpod.ip).split()
+    )
+    mpod(OIDAndSuffix(('outputStatus', 'u100')))
+    fake_process.register_subprocess(
+        'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public {} outputStatus.u100'.format(mpod.ip).split()
+    )
+    mpod(OIDAndSuffix(('outputStatus', Suffix((1, 0)))))
+    fake_process.register_subprocess(
+        'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public {} outputStatus.u100'.format(mpod.ip).split()
+    )
+    mpod(OIDAndSuffix(('outputStatus', Suffix('u100'))))
 
     # It is not possible to get the 'outputStatus' of channels that are not defined.
     with pytest.raises(KeyError):
@@ -128,13 +148,23 @@ def test_control(fake_process):
     # As the examples below show, it is not possible to execute commands the would require output 
     # beyond the limits.
     # The current limits can be accessed as member variables of the 'Module' and 'Channel' classes, i.e.
-    assert mpod[1][0].max_abs_current_ramp == 1e-6
-    assert mpod[1][0].max_abs_current_standby == 1e-8
-    assert mpod[3][0].max_abs_voltage == 890.
+    assert mpod['u100'].max_abs_current_ramp == 1e-6
+    # The following two commands show an alternative way of passing a channel address to the \
+    # crate by using a `Suffix` object.
+    # The `Suffix` object is used internally by `hv_control` to enforce a correct format of the suffix.
+    assert mpod[Suffix((1,0))].max_abs_current_ramp == 1e-6
+    assert mpod[Suffix(('u100'))].max_abs_current_ramp == 1e-6
+
+    assert mpod['u100'].max_abs_current_standby == 1e-8
+    assert mpod['u300'].max_abs_voltage == 890.
+    assert mpod[1].abs_voltage_limit == 6e3
+    assert mpod[3].abs_voltage_limit == 3e3
 
     # Error: Maximum voltage of channel 'u101' is only 3000 V.
     with pytest.raises(ValueError):
         mpod('outputVoltage.u101', argument=3500)
+    with pytest.raises(ValueError):
+        mpod('outputVoltage.u101', argument=2*mpod['u101'].max_abs_voltage)
     # Error: There is actually also a lower limit for the voltage (0 V).
     # Please note that, by design of the modules, it is actually impossible to apply a voltage 
     # with an adverse polarity to a detector.

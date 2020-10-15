@@ -17,7 +17,7 @@ from ipaddress import IPv4Address
 
 from hv_control.dictionary_container import DictionaryContainer
 from hv_control.module import Module
-from hv_control.oid import OIDAndSuffix
+from hv_control.oid import OIDAndSuffix, Suffix
 
 class Crate(DictionaryContainer):
     def __init__(self, name, n_slots, ip):
@@ -34,6 +34,13 @@ class Crate(DictionaryContainer):
             oid_and_suffix = OIDAndSuffix(oid_and_suffix)
 
         self[oid_and_suffix.suffix.module_number][oid_and_suffix.suffix.channel_number][oid_and_suffix.oid](self.ip, str(oid_and_suffix.suffix), community=community, argument=argument, dry_run=dry_run)
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self.dictionary[key]
+        else:
+            suffix = Suffix(key)
+            return self.dictionary[suffix.module_number][suffix.channel_number]
 
     def parse_ip(self, ip):
         if isinstance(ip, IPv4Address):
