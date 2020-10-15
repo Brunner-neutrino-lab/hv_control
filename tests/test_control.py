@@ -51,7 +51,7 @@ def test_control(fake_process):
     # suffix in a wrong format.
 
     # Error: Argument must be a string.
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         mpod(0)
     # Error: Argument must contain a '.'
     with pytest.raises(ValueError):

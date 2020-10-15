@@ -19,93 +19,80 @@ from hv_control.oid import OIDAndSuffix, Suffix
 
 class TestOID:
     def test_suffix(self):
-        # Default __init__
-        suffix = Suffix()
-
-        assert suffix.module_number == 0
-        assert suffix.channel_number == 0
-        assert str(suffix) == 'u0'
-
         # __init__ with module and channel number as pair of int
-        suffix = Suffix(module_and_channel=(1, 2))
+        suffix = Suffix((1, 2))
         assert suffix.module_number == 1
         assert suffix.channel_number == 2
         assert str(suffix) == 'u102'
 
         with pytest.raises(ValueError):
-            Suffix(module_and_channel=(10, 2))
+            Suffix((10, 2))
         with pytest.raises(ValueError):
-            Suffix(module_and_channel=(1, 200))
+            Suffix((1, 200))
 
         # __init__ with module and channel number in the 'u...' string format
-        suffix = Suffix(suffix_string='u304')
+        suffix = Suffix('u304')
         assert suffix.module_number == 3
         assert suffix.channel_number == 4
         assert str(suffix) == 'u304'
 
-        suffix = Suffix(suffix_string='u34')
+        suffix = Suffix('u34')
         assert suffix.module_number == 0
         assert suffix.channel_number == 34
         assert str(suffix) == 'u34'
 
-        suffix = Suffix(suffix_string='u3')
+        suffix = Suffix('u3')
         assert suffix.module_number == 0
         assert suffix.channel_number == 3
         assert str(suffix) == 'u3'
 
-        suffix = Suffix(suffix_string='u0')
+        suffix = Suffix('u0')
         assert suffix.module_number == 0
         assert suffix.channel_number == 0
         assert str(suffix) == 'u0'
 
         with pytest.raises(ValueError):
-            Suffix(suffix_string='u03')
+            Suffix('u03')
+        with pytest.raises(TypeError):
+            Suffix(0)
         with pytest.raises(ValueError):
-            Suffix(suffix_string=0)
+            Suffix('')
         with pytest.raises(ValueError):
-            Suffix(suffix_string='')
+            Suffix('u')
         with pytest.raises(ValueError):
-            Suffix(suffix_string='u')
+            Suffix('a100')
         with pytest.raises(ValueError):
-            Suffix(suffix_string='a100')
+            Suffix('u1000')
         with pytest.raises(ValueError):
-            Suffix(suffix_string='u1000')
-        with pytest.raises(ValueError):
-            Suffix(suffix_string='u10a')
+            Suffix('u10a')
 
     def test_oid_and_suffix(self):
-        # Default __init__
-        oid_and_suffix = OIDAndSuffix()
-        assert oid_and_suffix.oid == '0'
-        assert oid_and_suffix.suffix == Suffix()
-        assert str(oid_and_suffix) == '0.u0'
-
         # __init__ with oid and suffix as pair of string and Suffix object
-        oid_and_suffix = OIDAndSuffix(oid_and_suffix=('oid', Suffix(module_and_channel=(1, 2))))
+        oid_and_suffix = OIDAndSuffix(('oid', Suffix(module_and_channel=(1, 2))))
         assert oid_and_suffix.oid == 'oid'
         assert oid_and_suffix.suffix == Suffix(module_and_channel=(1, 2))
         assert str(oid_and_suffix) == 'oid.u102'
 
         with pytest.raises(ValueError):
-            OIDAndSuffix(oid_and_suffix=(0, Suffix()))
+            OIDAndSuffix((0, Suffix((0,0))))
         with pytest.raises(ValueError):
-            OIDAndSuffix(oid_and_suffix=('', Suffix()))
+            OIDAndSuffix(('', Suffix((0,0))))
 
         # __init__ with oid and suffix as pair of two strings
-        oid_and_suffix = OIDAndSuffix(oid_and_suffix=('oid', 'u0'))
+        oid_and_suffix = OIDAndSuffix(('oid', 'u0'))
         assert oid_and_suffix.oid == 'oid'
-        assert oid_and_suffix.suffix == Suffix()
+        assert oid_and_suffix.suffix == Suffix((0,0))
         assert str(oid_and_suffix) == 'oid.u0'
 
         # __init__ with oid and suffix in the 'OID.SUFFIX' format
-        oid_and_suffix = OIDAndSuffix(oid_and_suffix_string='oid.u0')
+        oid_and_suffix = OIDAndSuffix('oid.u0')
         assert oid_and_suffix.oid == 'oid'
-        assert oid_and_suffix.suffix == Suffix()
+        assert oid_and_suffix.suffix == Suffix((0,0))
         assert str(oid_and_suffix) == 'oid.u0'
 
         with pytest.raises(ValueError):
-            OIDAndSuffix(oid_and_suffix_string='.u0')
+            OIDAndSuffix('.u0')
         with pytest.raises(ValueError):
-            OIDAndSuffix(oid_and_suffix_string='oid.')
+            OIDAndSuffix('oid.')
         with pytest.raises(ValueError):
-            OIDAndSuffix(oid_and_suffix_string='.')
+            OIDAndSuffix('.')
