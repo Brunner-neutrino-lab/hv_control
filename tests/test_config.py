@@ -32,12 +32,12 @@ mpod = Mpod_Mini('utr-mpod-0', IPv4Address('192.168.0.237'))
 mpod.add_module(1, EHS_8260p('germanium_hv'))
 # Create channels 0 and 1 of the module and set detector-specific parameters.
 # These channels can be adressed by the OID suffixes 'u100' and 'u101'.
-mpod[1].add_channel(0, Channel('clover_USNA', max_abs_voltage=3500., max_abs_current_ramp=1e-6, max_abs_current_standby=1e-8))
-mpod[1].add_channel(1, Channel('clover_Yale', max_abs_voltage=3000., max_abs_current_ramp=1e-6, max_abs_current_standby=1e-8))
+mpod[1].add_channel(0, Channel('clover_USNA', max_abs_voltage=3500., max_abs_current_ramp=1e-6, max_abs_current_standby=1e-8, max_abs_rise_rate=5.))
+mpod[1].add_channel(1, Channel('clover_Yale', max_abs_voltage=3000., max_abs_current_ramp=1e-6, max_abs_current_standby=1e-8, max_abs_rise_rate=5.))
 
 # Add a module for (CeBr) scintillation detectors to the crate in slot 3.
 mpod.add_module(3, EHS_F5_30n('cebr_hv'))
 # Create channels 0 and 1 of the module and set detector-specific parameters.
 # These channels can be adressed by the OID suffixes 'u100' and 'u101'.
-mpod[3].add_channel(0, Channel('cebr_0', max_abs_voltage=890.))
-mpod[3].add_channel(1, Channel('cebr_1', max_abs_voltage=890.))
+mpod[3].add_channel(0, Channel('cebr_0', max_abs_voltage=890., max_abs_rise_rate=10.))
+mpod[3].add_channel(1, Channel('cebr_1', max_abs_voltage=890., max_abs_rise_rate=10.))

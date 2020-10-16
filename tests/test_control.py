@@ -157,14 +157,17 @@ def test_control(fake_process):
 
     assert mpod['u100'].max_abs_current_standby == 1e-8
     assert mpod['u300'].max_abs_voltage == 890.
+    assert mpod['u100'].max_abs_rise_rate == 5.
     assert mpod[1].abs_voltage_limit == 6e3
     assert mpod[3].abs_voltage_limit == 3e3
 
-    # Error: Maximum voltage of channel 'u101' is only 3000 V.
+    # Error: Maximum voltage of channel 'u101' is only 3000 V, and the maximum rise rate is 5 V/s.
     with pytest.raises(ValueError):
         mpod('outputVoltage.u101', argument=3500)
     with pytest.raises(ValueError):
         mpod('outputVoltage.u101', argument=2*mpod['u101'].max_abs_voltage)
+    with pytest.raises(ValueError):
+        mpod('outputVoltageRiseRate.u101', argument=1.1*mpod['u101'].max_abs_rise_rate)
     # Error: There is actually also a lower limit for the voltage (0 V).
     # Please note that, by design of the modules, it is actually impossible to apply a voltage 
     # with an adverse polarity to a detector.
