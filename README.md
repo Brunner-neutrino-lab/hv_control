@@ -75,6 +75,7 @@ The 'community' argument defines the SNMP community, as described above.
 It should be avoided to write down the community names anywhere in scripts, because they serve as a password protection for the HV control.
 Making 'community' an argument of every single command call supports this philosophy by discouraging a global setting of the community.
 For example, the community could have been implemented as a property of the `Crate` class, which might allow anyone with the correct config file (see below) to run commands with high privileges.
+The script `tests/test_password.py` shows how to use python's built-in `getpass` module to query a password from the user without having to display it anywhere.
 By default, a command is transmitted to the command line using the `subprocess` module of python.
 In order to test the commands, one could execute them as a member of the 'public' community, which will not allow any potentially harmful 'set' commands.
 Since this procedure prints error messages on the command line as well, `Channel.__call__()` also provides a 'dry_run' flag.

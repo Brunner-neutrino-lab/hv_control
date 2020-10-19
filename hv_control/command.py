@@ -23,7 +23,7 @@ class Command:
         self.argument_is_valid = argument_is_valid
 
     def __call__(self, ip_address, oid_suffix, community='public', argument=None, dry_run=False):
-        
+
         com_str = self.command_string(argument)
         opt_and_arg_str = self.option_and_argument_string(
             ip_address, oid_suffix, community=community, argument=argument

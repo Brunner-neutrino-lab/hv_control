@@ -33,7 +33,7 @@ class Crate(DictionaryContainer):
         if not isinstance(oid_and_suffix, OIDAndSuffix):
             oid_and_suffix = OIDAndSuffix(oid_and_suffix)
 
-        self[oid_and_suffix.suffix.module_number][oid_and_suffix.suffix.channel_number][oid_and_suffix.oid](self.ip, str(oid_and_suffix.suffix), community=community, argument=argument, dry_run=dry_run)
+        return self[oid_and_suffix.suffix.module_number][oid_and_suffix.suffix.channel_number][oid_and_suffix.oid](self.ip, str(oid_and_suffix.suffix), community=community, argument=argument, dry_run=dry_run)
 
     def __getitem__(self, key):
         if isinstance(key, int):
