@@ -29,5 +29,5 @@ class Channel(DictionaryContainer):
         self.add_value('outputMeasurementSenseVoltage', Command('outputMeasurementSenseVoltage', None))
         self.add_value('outputStatus', Command('outputStatus', None)),
         self.add_value('outputSwitch', Command('outputSwitch', (int, ), lambda argument : argument in (0, 1, 10)))
-        self.add_value('outputVoltageRiseRate', Command('outputVoltageRiseRate', (int, float), lambda argument : argument >= 0. and argument <= self.max_abs_rise_rate))
+        self.add_value('outputVoltageRiseRate', Command('outputVoltageRiseRate', (int, float), lambda argument : abs(argument) <= self.max_abs_rise_rate))
         self.add_value('outputVoltage', Command('outputVoltage', (int, float), lambda argument : argument >= 0. and argument <= self.max_abs_voltage))
