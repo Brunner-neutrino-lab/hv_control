@@ -33,7 +33,7 @@ class TestCommand:
             outputStatus(IPv4Address('0.0.0.0'), 'u0', argument=0)
 
     def test_command_with_integer_argument(self, fake_process):
-        outputSwitch = Command('outputSwitch', (int, ), lambda argument : argument in (0, 1, 10))
+        outputSwitch = Command('outputSwitch', argument_type=(int, ), argument_is_valid=lambda argument : argument in (0, 1, 10))
 
         get_command_string = 'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputSwitch.u0'
         fake_process.register_subprocess(get_command_string.split())
@@ -51,7 +51,7 @@ class TestCommand:
             outputSwitch(IPv4Address('0.0.0.0'), 'u0', argument=1.)
 
     def test_command_with_float_argument(self, fake_process):
-        outputVoltage = Command('outputVoltage', (int, float), lambda argument : argument >= 0. and argument <= 1000.)
+        outputVoltage = Command('outputVoltage', argument_type=(int, float), argument_is_valid=lambda argument : argument >= 0. and argument <= 1000.)
 
         get_command_string = 'snmpget -Oqv -v 2c -m +WIENER-CRATE-MIB -c public 0.0.0.0 outputVoltage.u0'
         fake_process.register_subprocess(get_command_string.split())

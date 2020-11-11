@@ -16,7 +16,7 @@
 import subprocess
 
 class Command:
-    def __init__(self, name, argument_type=None, argument_sign=1, 
+    def __init__(self, name, argument_type=None, 
     argument_is_valid=lambda argument : True):
         self.name = name
         self.argument_type = argument_type

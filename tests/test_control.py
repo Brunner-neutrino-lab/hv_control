@@ -129,7 +129,7 @@ def test_control(fake_process):
     )
     mpod('outputVoltage.u100', argument=0.)
 
-    # Commands that take arguments always allow the user to set limits on their values.
+    # Commands that take arguments allow the user to set limits on their values.
     # For the 'outputVoltage' and 'outputCurrent' parameters, the constructor of the 'Channel' 
     # class provides the additional arguments 
     #
@@ -140,6 +140,9 @@ def test_control(fake_process):
     # to set an upper limit for the allowed absolute value of the voltage and the current.
     # For the current, an additional distinction is made between the allowed current during
     # the ramp-up/down process and on standby.
+    # To prevent a user from entering the wrong sign for an expression, the 
+    # Command.argument_is_valid() method should be implemented accordingly.
+    #
     # When the parameter 'outputCurrent' is set, the limit for the ramp-up/down process will be 
     # applied.
     # If these parameters are not set explicitly when a 'Channel' object is constructed, adding
@@ -168,6 +171,9 @@ def test_control(fake_process):
         mpod('outputVoltage.u101', argument=2*mpod['u101'].max_abs_voltage)
     with pytest.raises(ValueError):
         mpod('outputVoltageRiseRate.u101', argument=1.1*mpod['u101'].max_abs_rise_rate)
+    # The example above also works for channels that have a negative rise rate.
+    with pytest.raises(ValueError):
+        mpod('outputVoltageRiseRate.u301', argument=1.1*mpod['u301'].max_abs_rise_rate)
     # Error: There is actually also a lower limit for the voltage (0 V).
     # Please note that, by design of the modules, it is actually impossible to apply a voltage 
     # with an adverse polarity to a detector.
