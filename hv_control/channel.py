@@ -17,9 +17,10 @@ from hv_control.dictionary_container import DictionaryContainer
 from hv_control.command import Command
 
 class Channel(DictionaryContainer):
-    def __init__(self, name, max_abs_voltage=None, max_abs_current_ramp=None, max_abs_current_standby=None, max_abs_rise_rate=None):
+    def __init__(self, name, polarity=None, max_abs_voltage=None, max_abs_current_ramp=None, max_abs_current_standby=None, max_abs_rise_rate=None):
         DictionaryContainer.__init__(self, name, Command)
 
+        self.polarity = polarity
         self.max_abs_voltage = max_abs_voltage
         self.max_abs_current_ramp = max_abs_current_ramp
         self.max_abs_current_standby = max_abs_current_standby
@@ -29,5 +30,5 @@ class Channel(DictionaryContainer):
         self.add_value('outputMeasurementSenseVoltage', Command('outputMeasurementSenseVoltage', None))
         self.add_value('outputStatus', Command('outputStatus', None)),
         self.add_value('outputSwitch', Command('outputSwitch', (int, ), lambda argument : argument in (0, 1, 10)))
-        self.add_value('outputVoltageRiseRate', Command('outputVoltageRiseRate', (int, float), lambda argument : abs(argument) <= self.max_abs_rise_rate))
+        self.add_value('outputVoltageRiseRate', Command('outputVoltageRiseRate', (int, float), lambda argument : abs(argument) <= abs(self.max_abs_rise_rate)))
         self.add_value('outputVoltage', Command('outputVoltage', (int, float), lambda argument : argument >= 0. and argument <= self.max_abs_voltage))

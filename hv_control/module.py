@@ -30,6 +30,8 @@ class Module(DictionaryContainer):
 
     def add_channel(self, channel_number, channel):
         self.add_value(channel_number, channel)
+        if self[channel_number].polarity is None:
+            self[channel_number].polarity= self.polarity
         if self[channel_number].max_abs_voltage is None:
             self[channel_number].max_abs_voltage = self.abs_voltage_limit
         if self[channel_number].max_abs_current_ramp is None:
