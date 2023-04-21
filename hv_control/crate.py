@@ -21,7 +21,7 @@ from hv_control.oid import OIDAndSuffix, Suffix
 
 class Crate(DictionaryContainer):
     def __init__(self, name, n_slots, ip):
-        assert n_slots in range(10)
+        assert n_slots in range(1,11)
         self.n_slots = n_slots
         DictionaryContainer.__init__(self, name, Module, key_is_valid=lambda key : key in range(0, self.n_slots))
         self.ip = self.parse_ip(ip)

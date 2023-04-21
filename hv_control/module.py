@@ -48,3 +48,8 @@ class EHS_F5_30n(Module):
     def __init__(self, name):
         Module.__init__(self, name, n_channels=16, polarity=-1, 
                         abs_voltage_limit=3e3, abs_current_limit=1e-3)
+
+class EBS_C0_30(Module):
+    def __init__(self, name):
+        Module.__init__(self, name, n_channels=12, polarity=1,
+                        abs_voltage_limit=3e3, abs_current_limit=1e-3)
