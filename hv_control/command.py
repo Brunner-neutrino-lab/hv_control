@@ -37,7 +37,8 @@ class Command:
             return com_opt_arg_str
         else:
             # print("Running: {}".format(com_opt_arg_str))
-            subprocess.run(com_opt_arg_str.split())
+            output = subprocess.run(com_opt_arg_str.split(),stdout=subprocess.PIPE)
+            return output.stdout.decode('utf-8')
 
     def argument_type_string(self):
         if float in self.argument_type:
