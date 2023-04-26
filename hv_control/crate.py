@@ -29,10 +29,10 @@ class Crate(DictionaryContainer):
     def add_module(self, module_number, module):
         self.add_value(module_number, module)
 
-    def __call__(self, oid_and_suffix, community='public', argument=None, dry_run=False):
+    def __call__(self, oid_and_suffix,argument=None, community='guru', dry_run=False):
         if not isinstance(oid_and_suffix, OIDAndSuffix):
             oid_and_suffix = OIDAndSuffix(oid_and_suffix)
-
+        
         return self[oid_and_suffix.suffix.module_number][oid_and_suffix.suffix.channel_number][oid_and_suffix.oid](self.ip, str(oid_and_suffix.suffix), community=community, argument=argument, dry_run=dry_run)
 
     def __getitem__(self, key):

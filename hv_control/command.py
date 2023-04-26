@@ -22,7 +22,10 @@ class Command:
         self.argument_type = argument_type
         self.argument_is_valid = argument_is_valid
 
-    def __call__(self, ip_address, oid_suffix, community='public', argument=None, dry_run=False):
+    def __call__(self, ip_address, oid_suffix, community='guru', argument=None, dry_run=False):
+        print('oid = {}'.format(oid_suffix))
+        print('community = {}'.format(community))
+        print('argument = {}'.format(argument))
 
         com_str = self.command_string(argument)
         opt_and_arg_str = self.option_and_argument_string(
@@ -33,6 +36,7 @@ class Command:
         if dry_run:
             return com_opt_arg_str
         else:
+            print("Running: {}".format(com_opt_arg_str))
             subprocess.run(com_opt_arg_str.split())
 
     def argument_type_string(self):
@@ -54,7 +58,7 @@ of type {} are currently not supported.'.format(self.argument_type))
             return ''
         return '-Oqv'
 
-    def option_and_argument_string(self, ip_address, oid_suffix, community='public', argument=None):
+    def option_and_argument_string(self, ip_address, oid_suffix, community='guru', argument=None):
         return '{}{}{}'.format(
             self.option_string(ip_address, oid_suffix, community=community, argument=argument),
             '' if argument is None else ' ',
@@ -62,13 +66,15 @@ of type {} are currently not supported.'.format(self.argument_type))
         )
 
     def option_string(self, ip_address, oid_suffix, community, argument=None):
-        return '{}{}{} -c {} {} {}.{}'.format(
+        optString = '{}{}{} -c {} {} {}.{}'.format(
             self.special_options(argument),
             '' if self.special_options(argument) == '' else ' ', 
             '-v 2c -m +WIENER-CRATE-MIB',
             community, ip_address, self.name, 
             oid_suffix
         )
+        # print(optString)
+        return optString
 
     def argument_string(self, argument):
         if argument is not None:
