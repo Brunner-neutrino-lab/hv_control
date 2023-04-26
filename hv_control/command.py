@@ -23,9 +23,9 @@ class Command:
         self.argument_is_valid = argument_is_valid
 
     def __call__(self, ip_address, oid_suffix, community='guru', argument=None, dry_run=False):
-        print('oid = {}'.format(oid_suffix))
-        print('community = {}'.format(community))
-        print('argument = {}'.format(argument))
+        # print('oid = {}'.format(oid_suffix))
+        # print('community = {}'.format(community))
+        # print('argument = {}'.format(argument))
 
         com_str = self.command_string(argument)
         opt_and_arg_str = self.option_and_argument_string(
@@ -36,7 +36,7 @@ class Command:
         if dry_run:
             return com_opt_arg_str
         else:
-            print("Running: {}".format(com_opt_arg_str))
+            # print("Running: {}".format(com_opt_arg_str))
             subprocess.run(com_opt_arg_str.split())
 
     def argument_type_string(self):
