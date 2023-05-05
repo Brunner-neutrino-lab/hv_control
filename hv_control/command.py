@@ -36,8 +36,9 @@ class Command:
         if dry_run:
             return com_opt_arg_str
         else:
-            # print("Running: {}".format(com_opt_arg_str))
-            output = subprocess.run(com_opt_arg_str.split(),stdout=subprocess.PIPE)
+            print("Running: {}".format(com_opt_arg_str))
+            output = subprocess.run(com_opt_arg_str.split(),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+            #print(output.stdout.decode('utf-8'))
             return output.stdout.decode('utf-8')
 
     def argument_type_string(self):
